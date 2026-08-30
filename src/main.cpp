@@ -1,17 +1,3 @@
-// ===========================================================================
-//  ADA — Práctica 1. Orquestador.
-//
-//  Subcomandos:
-//    gen1  <n> <semilla> <salida>              genera eventos del editor
-//    gen2  <n> <semilla> <salida>              genera paquetes del firewall
-//    p1    <entrada> <array|lista> [log]       ejecuta el Problema 1
-//    p2    <entrada> <C> <T_ms> <L> [log]      ejecuta el Problema 2
-//    bench <n> <semilla> <repeticiones>        mide ambos problemas
-//
-//  Compilación:
-//    g++ -std=c++17 -O2 -o ada_p1 src/*.cpp
-// ===========================================================================
-
 #include "tad.hpp"
 #include "stack_array.hpp"
 #include "stack_list.hpp"
@@ -22,6 +8,7 @@
 #include "generator.hpp"
 
 #include <chrono>
+#include <streambuf>
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
@@ -33,13 +20,16 @@ using Reloj = std::chrono::high_resolution_clock;
 
 namespace {
 
+class BufNulo : public std::streambuf {
+protected:
+    int overflow(int c) override { return c; }
+};
+
 double msDesde(Reloj::time_point t0) {
     auto t1 = Reloj::now();
     return std::chrono::duration<double, std::milli>(t1 - t0).count();
 }
 
-// Media y desviación estándar muestral, para la Sección 9
-// ("reportando media y desviación estándar del tiempo medido").
 void mediaYDesv(const double* v, int k, double& media, double& desv) {
     media = 0.0;
     for (int i = 0; i < k; ++i) media += v[i];
@@ -59,13 +49,9 @@ void uso() {
         "  ada_p1 bench <n> <semilla> <repeticiones>\n";
 }
 
-// ---------------------------------------------------------------------------
-
 int ejecutarP1(const std::string& entrada, const std::string& rep,
                const std::string& rutaLog)
 {
-    // Aquí se ve el TAD en acción: se eligen las implementaciones en tiempo
-    // de ejecución y el motor no cambia.
     IStack* undo = nullptr;
     IStack* redo = nullptr;
     if (rep == "array") { undo = new StackArray(8); redo = new StackArray(8); }
@@ -109,13 +95,11 @@ int ejecutarP1(const std::string& entrada, const std::string& rep,
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-
 int ejecutarP2(const std::string& entrada, std::size_t C, long long T,
                std::size_t L, const std::string& rutaLog)
 {
-    QueueCircular buffer(C);   // búfer de recepción, capacidad fija
-    QueueList     ventana;     // cola de marcas de tiempo, tamaño no acotado
+    QueueCircular buffer(C);
+    QueueList     ventana;
 
     std::ofstream flog;
     std::ostream* log = &std::cout;
@@ -145,8 +129,6 @@ int ejecutarP2(const std::string& entrada, std::size_t C, long long T,
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-
 int ejecutarBench(std::size_t n, unsigned semilla, int reps) {
     if (reps < 1) reps = 5;
 
@@ -155,8 +137,8 @@ int ejecutarBench(std::size_t n, unsigned semilla, int reps) {
     generarEventosEditor(f1, n, semilla);
     generarPaquetes(f2, n, semilla);
 
-    std::ofstream nulo("/dev/null");
-    std::ostream& sumidero = nulo;   // el log no debe contaminar la medición
+    BufNulo bufNulo;
+    std::ostream sumidero(&bufNulo);
 
     double t[64];
     double media = 0.0, desv = 0.0;
@@ -165,7 +147,6 @@ int ejecutarBench(std::size_t n, unsigned semilla, int reps) {
     std::cout << "n = " << n << ", repeticiones = " << reps
               << ", semilla = " << semilla << "\n";
 
-    // --- P1 con arreglo ---
     for (int i = 0; i < reps; ++i) {
         StackArray u(8), r(8);
         UndoRedoEngine m(&u, &r);
@@ -176,7 +157,6 @@ int ejecutarBench(std::size_t n, unsigned semilla, int reps) {
     mediaYDesv(t, reps, media, desv);
     std::cout << "P1 pila arreglo : " << media << " ms  (sd " << desv << ")\n";
 
-    // --- P1 con lista ---
     for (int i = 0; i < reps; ++i) {
         StackList u, r;
         UndoRedoEngine m(&u, &r);
@@ -187,7 +167,6 @@ int ejecutarBench(std::size_t n, unsigned semilla, int reps) {
     mediaYDesv(t, reps, media, desv);
     std::cout << "P1 pila lista   : " << media << " ms  (sd " << desv << ")\n";
 
-    // --- P2 ---
     for (int i = 0; i < reps; ++i) {
         QueueCircular b(1024);
         QueueList     v;
@@ -206,9 +185,7 @@ int ejecutarBench(std::size_t n, unsigned semilla, int reps) {
     return 0;
 }
 
-} // namespace
-
-// ---------------------------------------------------------------------------
+}
 
 int main(int argc, char** argv) {
     if (argc < 2) { uso(); return 1; }
