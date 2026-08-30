@@ -10,52 +10,87 @@ UndoRedoEngine::UndoRedoEngine(IStack* pilaUndo, IStack* pilaRedo)
 std::size_t UndoRedoEngine::tamPilaUndo() const { return undo_->size(); }
 std::size_t UndoRedoEngine::tamPilaRedo() const { return redo_->size(); }
 
-// ---- Núcleo evaluable -----------------------------------------------------
-
 void UndoRedoEngine::aplicar(const EditOp& op) {
-    // TODO — ver contrato en undoredo.hpp
-    (void)op;
+    std::size_t pos = op.pos <= doc_.size() ? op.pos : doc_.size();
+
+    switch (op.type) {
+        case EditType::INSERT:
+            doc_.insert(pos, op.content);
+            break;
+
+        case EditType::DELETE: {
+            std::size_t cuantos = op.previous.size();
+            if (pos + cuantos > doc_.size()) cuantos = doc_.size() - pos;
+            doc_.erase(pos, cuantos);
+            break;
+        }
+
+        case EditType::REPLACE: {
+            std::size_t cuantos = op.previous.size();
+            if (pos + cuantos > doc_.size()) cuantos = doc_.size() - pos;
+            doc_.replace(pos, cuantos, op.content);
+            break;
+        }
+    }
 }
 
 void UndoRedoEngine::revertir(const EditOp& op) {
-    // TODO — ver contrato en undoredo.hpp
-    (void)op;
+    EditOp inv = op;
+
+    switch (op.type) {
+        case EditType::INSERT:
+            inv.type     = EditType::DELETE;
+            inv.previous = op.content;
+            inv.content.clear();
+            break;
+
+        case EditType::DELETE:
+            inv.type    = EditType::INSERT;
+            inv.content = op.previous;
+            break;
+
+        case EditType::REPLACE:
+            inv.type     = EditType::REPLACE;
+            inv.content  = op.previous;
+            inv.previous = op.content;
+            break;
+    }
+    aplicar(inv);
 }
 
 void UndoRedoEngine::aplicarEdicion(const EditOp& op) {
-    // TODO (regla R1)
-    //   1. aplicar(op)
-    //   2. undo_->push(op)
-    //   3. stats_.redosInvalidados += redo_->size();  redo_->clear();
-    //   4. ++stats_.edicionesAplicadas;
-    //
-    //   El paso 3 es el que verifica el caso de prueba 4 de la Sección 11.
-    (void)op;
+    aplicar(op);
+    undo_->push(op);
+
+    stats_.redosInvalidados += redo_->size();
+    redo_->clear();
+
+    ++stats_.edicionesAplicadas;
 }
 
 bool UndoRedoEngine::deshacer() {
-    // TODO (regla R2)
-    //   EditOp op;
-    //   if (!undo_->pop(op)) { ++stats_.undosNoOp; return false; }
-    //   revertir(op); redo_->push(op); ++stats_.undosEfectivos; return true;
-    return false;
+    EditOp op;
+    if (!undo_->pop(op)) {
+        ++stats_.undosNoOp;
+        return false;
+    }
+    revertir(op);
+    redo_->push(op);
+    ++stats_.undosEfectivos;
+    return true;
 }
 
 bool UndoRedoEngine::rehacer() {
-    // TODO (regla R3) — simétrico a deshacer(), pero SIN vaciar la pila Undo.
-    return false;
+    EditOp op;
+    if (!redo_->pop(op)) {
+        ++stats_.redosNoOp;
+        return false;
+    }
+    aplicar(op);
+    undo_->push(op);
+    ++stats_.redosEfectivos;
+    return true;
 }
-
-// ---- Lectura del archivo de eventos (ya resuelto) --------------------------
-//
-// Formato de entrada (Sección 4):
-//   EDIT <INSERT|DELETE|REPLACE> <posicion> <contenido> [<texto_previo>]
-//   UNDO
-//   REDO
-//
-// El campo <texto_previo> es una extensión nuestra: hace falta para poder
-// revertir DELETE y REPLACE de forma autónoma. Documéntenlo en el README.
-// Para INSERT se ignora; para DELETE, <contenido> puede ir vacío como "-".
 
 std::size_t UndoRedoEngine::procesarArchivo(const std::string& ruta,
                                             std::ostream& log)
