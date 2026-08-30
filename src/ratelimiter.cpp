@@ -24,37 +24,46 @@ bool RateLimiter::consumir(Packet& out) {
     return buffer_->dequeue(out);
 }
 
-// ---- Núcleo evaluable -----------------------------------------------------
-
 std::size_t RateLimiter::purgarExpirados(long long t_actual) {
-    // TODO — ver el contrato y el argumento amortizado en ratelimiter.hpp
-    (void)t_actual;
-    return 0;
+    std::size_t purgadas = 0;
+    Packet f;
+
+    while (ventana_->front(f)) {
+        if (f.ts_ms > t_actual - T_ms_) break;
+
+        Packet tmp;
+        ventana_->dequeue(tmp);
+        ++purgadas;
+    }
+    return purgadas;
 }
 
 Veredicto RateLimiter::procesar(const Packet& p) {
-    // TODO
-    //   ++stats_.total;
-    //   std::size_t purgadas = purgarExpirados(p.ts_ms);
-    //   stats_.marcasPurgadasTot += purgadas;
-    //   if (purgadas > stats_.purgaMaximaPuntual) stats_.purgaMaximaPuntual = purgadas;
-    //
-    //   if (ventana_->size() >= L_)   -> ++rechazadosTasa;   return RECHAZO_TASA;
-    //   if (buffer_->isFull())        -> ++rechazadosBuffer; return RECHAZO_BUFFER_LLENO;
-    //
-    //   buffer_->enqueue(p);
-    //   ventana_->enqueue(p);        // solo interesa p.ts_ms
-    //   actualizar ocupacionMaxima y aceptados;
-    //   return ACEPTADO;
-    //
-    //   PREGUNTA DE SUSTENTACIÓN QUE CASI SEGURO LES HARÁN: si un paquete se
-    //   rechaza por búfer lleno, ¿debe contar para el límite de tasa? Es
-    //   decir, ¿se registra su marca en la ventana? Decidan y argumenten.
-    (void)p;
-    return Veredicto::RECHAZO_TASA;
-}
+    ++stats_.total;
 
-// ---- Lectura del archivo de paquetes (ya resuelto) -------------------------
+    std::size_t purgadas = purgarExpirados(p.ts_ms);
+    stats_.marcasPurgadasTot += purgadas;
+    if (purgadas > stats_.purgaMaximaPuntual) stats_.purgaMaximaPuntual = purgadas;
+
+    if (ventana_->size() >= L_) {
+        ++stats_.rechazadosTasa;
+        return Veredicto::RECHAZO_TASA;
+    }
+
+    if (buffer_->isFull()) {
+        ++stats_.rechazadosBuffer;
+        return Veredicto::RECHAZO_BUFFER_LLENO;
+    }
+
+    buffer_->enqueue(p);
+    ventana_->enqueue(p);
+
+    ++stats_.aceptados;
+    if (buffer_->size() > stats_.ocupacionMaxima)
+        stats_.ocupacionMaxima = buffer_->size();
+
+    return Veredicto::ACEPTADO;
+}
 
 std::size_t RateLimiter::procesarArchivo(const std::string& ruta,
                                          std::ostream& log)
