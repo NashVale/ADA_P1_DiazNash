@@ -1,0 +1,8 @@
+# Caso 6 — Mas REDO que elementos disponibles.
+# Esperado: el primer REDO es efectivo; los tres siguientes son NO-OP.
+EDIT INSERT 0 uno -
+UNDO
+REDO
+REDO
+REDO
+REDO

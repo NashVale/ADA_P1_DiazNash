@@ -1,0 +1,7 @@
+# Caso 6 — Dequeue sobre buffer vacio.         Ejecutar con: C=8 T=1000 L=5
+# Se acepta 1 paquete y luego se consume mas veces de las que hay.
+# Esperado: el primer consumir() devuelve true; los siguientes false (NO-OP),
+# sin caidas ni underflow del contador de tamano.
+# NOTA: requiere invocar consumir() desde main; ver la seccion "Casos de
+# prueba" del README para el modo de ejecucion.
+0 700

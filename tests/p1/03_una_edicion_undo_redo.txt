@@ -1,0 +1,6 @@
+# Caso 3 — Una edicion, UNDO, REDO.
+# Esperado: doc="hola" -> UNDO -> doc="" -> REDO -> doc="hola".
+# Al final: |Undo|=1, |Redo|=0.
+EDIT INSERT 0 hola -
+UNDO
+REDO

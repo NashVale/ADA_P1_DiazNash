@@ -1,0 +1,5 @@
+# Caso 2 — UNDO sin ediciones previas.
+# Esperado: los tres UNDO son NO-OP reportados. El programa NO debe abortar.
+UNDO
+UNDO
+UNDO

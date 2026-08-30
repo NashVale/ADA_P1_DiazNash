@@ -6,7 +6,12 @@ Universidad EAFIT — Estructuras de Datos y Algoritmos I
 > implementar. Ver la sección "Qué falta" al final.
 
 ## Integrantes
-- Nash Díaz Quessep
+
+| Apellidos y nombres | Correo |
+|---------------------|--------|
+| _(orden alfabético)_ | |
+| | |
+| | |
 
 ## Descripción
 

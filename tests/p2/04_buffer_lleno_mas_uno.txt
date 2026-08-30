@@ -1,0 +1,9 @@
+# Caso 4 — Buffer exactamente lleno + 1.       Ejecutar con: C=4 T=100000 L=1000
+# T y L se ponen deliberadamente altos para AISLAR la causa del rechazo:
+# aqui solo debe dispararse el limite de capacidad, nunca el de tasa.
+# Esperado: 4 aceptados, el 5.o RECHAZADO_BUFFER_LLENO, ocupacion maxima 4.
+0 100
+10 100
+20 100
+30 100
+40 100

@@ -1,0 +1,11 @@
+# Caso 7 — Paquete exactamente en el borde t = t0 + T.  Ejecutar con: C=8 T=1000 L=1
+# El paquete de t=1000 llega justo a T ms del de t=0.
+# Con purga ESTRICTA  (marca <  t - T)  la marca de t=0 SIGUE en la ventana
+#     -> el segundo paquete se RECHAZA por tasa (L=1).
+# Con purga INCLUSIVA (marca <= t - T)  la marca de t=0 se PURGA
+#     -> el segundo paquete se ACEPTA.
+# El equipo debe elegir una, justificarla en el informe y dejar constancia
+# aqui de cual es el resultado esperado bajo su convencion.
+0 100
+1000 100
+2000 100

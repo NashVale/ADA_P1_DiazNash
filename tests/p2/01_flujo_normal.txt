@@ -1,0 +1,6 @@
+# Caso 1 — Flujo normal por debajo de C y L.   Ejecutar con: C=8 T=1000 L=5
+# Esperado: los 4 paquetes ACEPTADOS, 0 rechazos, ocupacion maxima 4.
+0 500
+300 640
+600 200
+900 1200

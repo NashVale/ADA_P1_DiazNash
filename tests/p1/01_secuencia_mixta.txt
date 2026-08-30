@@ -1,0 +1,8 @@
+# Caso 1 — Secuencia normal mixta.
+# Esperado: documento final coherente; ningun UNDO/REDO debe ser no-op.
+EDIT INSERT 0 hola -
+EDIT INSERT 4 mundo -
+UNDO
+EDIT INSERT 4 aqui -
+REDO
+UNDO

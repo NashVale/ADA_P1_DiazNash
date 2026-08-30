@@ -1,0 +1,8 @@
+# Caso 4 — Edicion inmediatamente despues de un UNDO (regla R1).
+# Esperado: tras el EDIT la pila Redo queda VACIA y el REDO final es NO-OP.
+# Verificar que estadisticas.redosInvalidados == 1.
+EDIT INSERT 0 aaa -
+EDIT INSERT 3 bbb -
+UNDO
+EDIT INSERT 3 ccc -
+REDO
