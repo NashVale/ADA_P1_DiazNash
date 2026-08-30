@@ -1,0 +1,6 @@
+ada_p1
+ada_p1_debug
+*.o
+data/*.txt
+results/*.log
+.DS_Store
