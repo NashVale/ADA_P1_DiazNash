@@ -1,11 +1,5 @@
 # Decisiones de diseño y sus justificaciones
 
-Estas seis decisiones estaban documentadas en los comentarios del código.
-Al dejar el código limpio, quedan recogidas aquí para la **Sección 5 del
-informe** (Diseño de las soluciones) y para la sustentación oral.
-
----
-
 ## 1. Política de crecimiento de la pila sobre arreglo — `grow()`
 
 **Elegida:** duplicación, `nuevaCap = cap_ * 2`.
