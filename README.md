@@ -170,4 +170,4 @@ Procesador: 11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz
 ## Uso de herramientas de IA
 
 Se usó Claude (Anthropic) para discutir alternativas de diseño, revisar el
-código y apoyar la redacción. 
+código y apoyar la redacción del informe en formato LATEX. 
