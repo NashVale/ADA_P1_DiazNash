@@ -17,7 +17,7 @@ std::string palabraAleatoria(std::mt19937& rng, int minLen, int maxLen) {
     return s;
 }
 
-} // namespace
+}
 
 void generarEventosEditor(const std::string& rutaSalida,
                           std::size_t n,
@@ -37,7 +37,6 @@ void generarEventosEditor(const std::string& rutaSalida,
         << " pctUndo=" << pctUndo << " pctRedo=" << pctRedo << "\n";
     out << "# Formato: EDIT <tipo> <pos> <contenido> <texto_previo>\n";
 
-    // Longitud estimada del documento, para generar posiciones plausibles.
     std::size_t longEstimada = 0;
 
     for (std::size_t i = 0; i < n; ++i) {
@@ -51,11 +50,11 @@ void generarEventosEditor(const std::string& rutaSalida,
             std::size_t pos = distPos(rng);
             int tipo = distTipo(rng);
 
-            if (tipo == 0) {                       // INSERT
+            if (tipo == 0) {
                 std::string txt = palabraAleatoria(rng, 1, 8);
                 out << "EDIT INSERT " << pos << " " << txt << " -\n";
                 longEstimada += txt.size();
-            } else if (tipo == 1) {                // DELETE
+            } else if (tipo == 1) {
                 if (longEstimada == 0) { out << "EDIT INSERT 0 hola -\n"; longEstimada += 4; continue; }
                 std::size_t maxBorrar = longEstimada - pos;
                 if (maxBorrar == 0) { out << "EDIT INSERT " << pos << " x -\n"; ++longEstimada; continue; }
@@ -63,7 +62,7 @@ void generarEventosEditor(const std::string& rutaSalida,
                     static_cast<int>(maxBorrar > 6 ? 6 : maxBorrar));
                 out << "EDIT DELETE " << pos << " - " << prev << "\n";
                 longEstimada -= prev.size();
-            } else {                               // REPLACE
+            } else {
                 if (longEstimada == 0) { out << "EDIT INSERT 0 hola -\n"; longEstimada += 4; continue; }
                 std::size_t maxRepl = longEstimada - pos;
                 if (maxRepl == 0) { out << "EDIT INSERT " << pos << " y -\n"; ++longEstimada; continue; }
@@ -87,7 +86,7 @@ void generarPaquetes(const std::string& rutaSalida,
 
     std::mt19937 rng(semilla);
     std::uniform_int_distribution<int> distGap(0, gapMedioMs * 2);
-    std::uniform_int_distribution<int> distTam(40, 1500);   // bytes, tipico Ethernet
+    std::uniform_int_distribution<int> distTam(40, 1500);
     std::uniform_int_distribution<int> distRafaga(1, 100);
 
     out << "# Instancia sintetica Problema 2 (firewall)\n";
@@ -100,14 +99,12 @@ void generarPaquetes(const std::string& rutaSalida,
 
     for (std::size_t i = 0; i < n; ++i) {
         if (restanteRafaga == 0 && distRafaga(rng) <= 3) {
-            // Cada ~3% de los paquetes arranca una rafaga: 20-80 paquetes
-            // casi simultaneos. Esto fuerza el camino de RECHAZO_TASA.
             std::uniform_int_distribution<int> distLenRafaga(20, 80);
             restanteRafaga = static_cast<std::size_t>(distLenRafaga(rng));
         }
 
         if (restanteRafaga > 0) {
-            t += (distGap(rng) % 2);   // 0 o 1 ms: trafico apiñado
+            t += (distGap(rng) % 2);
             --restanteRafaga;
         } else {
             t += distGap(rng);
