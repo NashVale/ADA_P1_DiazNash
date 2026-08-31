@@ -52,7 +52,7 @@ al de `t0`. La Sección 5 del enunciado exige elegir explícitamente y justifica
 la convención contraria (`ts < t_actual − T`, intervalo cerrado `[t−T, t]`) es
 igual de defendible siempre que se declare.
 
-**Argumento amortizado (obligatorio, Sección 8.3):** una sola llamada puede
+**Argumento amortizado:** una sola llamada puede
 purgar hasta k marcas, luego el peor caso puntual es O(n). Pero cada marca se
 encola exactamente una vez y se desencola a lo sumo una vez en toda la
 ejecución, así que el total de purgas sobre n paquetes está acotado por n:
